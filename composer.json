@@ -1,0 +1,22 @@
+{
+    "name": "iivannov/gauge",
+    "description": "Laravel SQL profiling and debug package",
+    "keywords": ["php", "laravel", "sql", "query", "eloquent", "analyze", "profiling"],
+    "homepage": "",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ivan Ivanov",
+            "email": "iivannov@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php" : ">=5.6.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Iivannov\\Gauge\\": "src"
+        }
+    }
+}
