@@ -1,10 +1,11 @@
 <?php
 
 
-namespace Iivannov\Gauge\Listeners;
+namespace Iivannov\Gauge\Platform\Laravel\Listeners;
 
 use Iivannov\Gauge\Contracts\QueryLogger;
 use Iivannov\Gauge\Query;
+use Iivannov\Gauge\QueryCollection;
 
 class HandleQueryLog
 {
@@ -31,9 +32,9 @@ class HandleQueryLog
             return;
         }
 
-        $collection = [];
+        $collection = new QueryCollection();
         foreach ($this->db->getQueryLog() as $query) {
-            $collection[] = new Query($query);
+            $collection->push(new Query($query));
         }
 
         $this->handler->handle($collection);

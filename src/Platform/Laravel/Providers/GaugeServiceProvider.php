@@ -1,11 +1,12 @@
 <?php
 
-namespace Iivannov\Gauge\Providers;
+namespace Iivannov\Gauge\Platform\Laravel\Providers;
 
 use Iivannov\Gauge\Drivers\FileDriver;
 use Iivannov\Gauge\Drivers\HttpDriver;
 use Iivannov\Gauge\Drivers\JsonFileDriver;
 use Iivannov\Gauge\Drivers\RuntimeDriver;
+use Iivannov\Gauge\State\DisabledStateResolver;
 use Iivannov\Gauge\State\FileStateResolver;
 use Iivannov\Gauge\State\UrlStateResolver;
 use GuzzleHttp\Client;
@@ -33,24 +34,37 @@ class GaugeServiceProvider extends ServiceProvider
     {
         $settings = $this->app->make(\Illuminate\Contracts\Config\Repository::class)->get('gauge');
 
+        $this->registerStateDriver($settings);
+
+        $this->registerLogDriver($settings);
+    }
+
+    private function registerStateDriver($settings)
+    {
         $this->app->bind(\Iivannov\Gauge\Contracts\StateResolver::class, function () use ($settings) {
+
+            if(!isset($settings['state'])) {
+                throw new \RuntimeException('Missing configuration for "state" in config/gauge.php');
+            }
 
             switch ($settings['state']) {
                 case 'url' :
                     return new UrlStateResolver();
                 case 'file' :
-                    return new FileStateResolver();
+                    return new FileStateResolver(storage_path('framework'), 'gauge');
                 default:
-                    throw new \RuntimeException('Missing or invalid Gauge configuration in config/gauge.php');
-            }
+                    return new DisabledStateResolver();            }
         });
+    }
 
+    private function registerLogDriver($settings)
+    {
         $this->app->bind(\Iivannov\Gauge\Contracts\LogDriver::class, function () use ($settings) {
 
             switch ($settings['driver']) {
 
                 case 'runtime' :
-                    return new RuntimeDriver($this->app->make(\Illuminate\Http\Request::class));
+                    return new RuntimeDriver();
 
                 case 'file' :
                     /** @var \Illuminate\Contracts\Filesystem\Factory $filesystem */
@@ -70,22 +84,11 @@ class GaugeServiceProvider extends ServiceProvider
                     /** @var  \Illuminate\Http\Request $request */
                     $request = $this->app->make(\Illuminate\Http\Request::class);
 
-                    if($settings['drivers']['file']['disk']) {
-                        return new JsonFileDriver($request, $filesystem->disk($settings['drivers']['file']['disk']));
+                    if($settings['drivers']['json']['disk']) {
+                        return new JsonFileDriver($request, $filesystem->disk($settings['drivers']['json']['disk']));
                     }
 
                     return new JsonFileDriver($request, $filesystem->disk());
-
-                case 'http' :
-
-                    if(!isset($settings['drivers']['http']['url']) || !isset($settings['drivers']['http']['token']) || !$settings['drivers']['http']['url'] || !$settings['drivers']['http']['token']) {
-                        throw new \RuntimeException('Missing Gauge Authentication configuration in config/gauge.php');
-                    }
-
-                    /** @var  \Illuminate\Http\Request $request */
-                    $request = $this->app->make(\Illuminate\Http\Request::class);
-
-                    return new HttpDriver($request, new Client(), $settings['drivers']['http']['url'], $settings['drivers']['http']['token']);
 
                 default:
                     throw new \RuntimeException('Missing or invalid Gauge configuration in config/gauge.php');
@@ -93,7 +96,6 @@ class GaugeServiceProvider extends ServiceProvider
 
         });
     }
-
 
     private function isApplicationRunningInConsole()
     {
@@ -104,14 +106,9 @@ class GaugeServiceProvider extends ServiceProvider
         return false;
     }
 
-
-    private function bootInHttpMode(\Illuminate\Database\Connection $connection, \Illuminate\Contracts\Events\Dispatcher $dispatcher)
+    private function publish()
     {
-        // Enable the query log for the currently used DB connection
-        $connection->enableQueryLog();
-
-        // Wait for kernel to handle the request and listen for the event
-        $dispatcher->listen(\Illuminate\Foundation\Http\Events\RequestHandled::class, \Iivannov\Gauge\Listeners\HandleQueryLog::class);
+        $this->publishes([__DIR__ . '/../../config/laravel.php' => config_path('gauge.php')], 'gauge');
     }
 
 
@@ -122,9 +119,13 @@ class GaugeServiceProvider extends ServiceProvider
         ]);
     }
 
-
-    private function publish()
+    private function bootInHttpMode(\Illuminate\Database\Connection $connection, \Illuminate\Contracts\Events\Dispatcher $dispatcher)
     {
-        $this->publishes([__DIR__ . '/../../config/laravel.php' => config_path('gauge.php')], 'gauge');
+        // Enable the query log for the currently used DB connection
+        $connection->enableQueryLog();
+
+        // Wait for kernel to handle the request and listen for the event
+        $dispatcher->listen(\Illuminate\Foundation\Http\Events\RequestHandled::class, \Iivannov\Gauge\Listeners\HandleQueryLog::class);
     }
+
 }

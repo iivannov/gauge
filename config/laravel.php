@@ -6,7 +6,7 @@ return [
     |--------------------------------------------------------------------------
     | Default Driver and State Resolver
     |--------------------------------------------------------------------------
-    | Drivers: 'runtime', 'file', 'json', 'http'
+    | Drivers: 'runtime', 'file', 'json'
     | State resolvers:  'url', 'file'
     */
     'driver' => env('GAUGE_DRIVER_DEFAULT', 'runtime'),
@@ -22,9 +22,8 @@ return [
             'disk' => '' //will default to your laravel configuration
         ],
 
-        'http' => [
-            'url' => env('GAUGE_HTTP_URL', ''),
-            'token' => env('GAUGE_HTTP_TOKEN', ''),
-        ],
+        'json' => [
+            'disk' => '' //will default to your laravel configuration
+        ]
     ]
 ];
