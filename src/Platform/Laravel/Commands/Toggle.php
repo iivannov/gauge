@@ -1,6 +1,6 @@
 <?php
 
-namespace Iivannov\Gauge\Commands;
+namespace Iivannov\Gauge\Platform\Laravel\Commands;
 
 use Illuminate\Console\Command;
 

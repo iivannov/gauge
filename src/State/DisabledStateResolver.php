@@ -4,11 +4,11 @@ namespace Iivannov\Gauge\State;
 
 use Iivannov\Gauge\Contracts\StateResolver;
 
-class UrlStateResolver implements StateResolver
+class DisabledStateResolver implements StateResolver
 {
 
     public function enabled()
     {
-        return isset($_GET['debug']) && $_GET['debug'] == 'gauge';
+        return false;
     }
 }
