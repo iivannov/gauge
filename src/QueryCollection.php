@@ -5,7 +5,7 @@ namespace Iivannov\Gauge;
 
 class QueryCollection implements \IteratorAggregate
 {
-    protected $items;
+    protected $items = [];
 
     public function __construct($items = [])
     {

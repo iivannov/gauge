@@ -108,14 +108,14 @@ class GaugeServiceProvider extends ServiceProvider
 
     private function publish()
     {
-        $this->publishes([__DIR__ . '/../../config/laravel.php' => config_path('gauge.php')], 'gauge');
+        $this->publishes([__DIR__ . '/../../../../config/laravel.php' => config_path('gauge.php')], 'gauge');
     }
 
 
     private function bootInConsoleMode()
     {
         $this->commands([
-            \Iivannov\Gauge\Commands\Toggle::class,
+            \Iivannov\Gauge\Platform\Laravel\Commands\Toggle::class,
         ]);
     }
 
@@ -125,7 +125,7 @@ class GaugeServiceProvider extends ServiceProvider
         $connection->enableQueryLog();
 
         // Wait for kernel to handle the request and listen for the event
-        $dispatcher->listen(\Illuminate\Foundation\Http\Events\RequestHandled::class, \Iivannov\Gauge\Listeners\HandleQueryLog::class);
+        $dispatcher->listen(\Illuminate\Foundation\Http\Events\RequestHandled::class, \Iivannov\Gauge\Platform\Laravel\Listeners\HandleQueryLog::class);
     }
 
 }
