@@ -5,6 +5,7 @@ namespace Iivannov\Gauge\Drivers;
 
 use Iivannov\Gauge\Contracts\LogDriver;
 use Iivannov\Gauge\Query;
+use Iivannov\Gauge\QueryCollection;
 
 class FileDriver implements LogDriver
 {
@@ -36,6 +37,16 @@ class FileDriver implements LogDriver
         $this->filesystem->append($this->getFilePath(), $this->getLine($query));
     }
 
+    public function bulk(QueryCollection $collection)
+    {
+        $input = '';
+        foreach ($collection as $query) {
+            $input .= $this->getLine($query) . PHP_EOL;
+        }
+
+        $this->filesystem->append($this->getFilePath(), $input);
+    }
+
     private function getFilePath()
     {
         return $this->filepath;
@@ -47,5 +58,6 @@ class FileDriver implements LogDriver
 
         return "REQUEST: " . $requestUid . " FINGERPRINT: " . $query->getFingerprint() . " QUERY: " . $query->getRawQuery() . " IN " . $query->getTime() . " ms";
     }
+
 
 }

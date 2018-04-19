@@ -2,7 +2,7 @@
 
 namespace Iivannov\Gauge;
 
-class Query
+class Query implements \JsonSerializable
 {
     protected $time;
 
@@ -65,5 +65,15 @@ class Query
     public function getRawQuery()
     {
         return vsprintf(str_replace('?', '%s', $this->statement), $this->bindings);
+    }
+
+
+    function jsonSerialize()
+    {
+        return [
+            'statement' => $this->statement,
+            'bindings' => $this->bindings,
+            'time' => $this->time,
+        ];
     }
 }

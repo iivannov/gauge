@@ -4,9 +4,10 @@ namespace Iivannov\Gauge;
 
 
 use Iivannov\Gauge\Contracts\LogDriver;
+use Iivannov\Gauge\Contracts\QueryLogger as QueryLoggerContract;
 use Iivannov\Gauge\Contracts\StateResolver;
 
-class QueryLogger implements \Iivannov\Gauge\Contracts\QueryLogger
+class QueryLogger implements QueryLoggerContract
 {
 
     /**
@@ -31,15 +32,9 @@ class QueryLogger implements \Iivannov\Gauge\Contracts\QueryLogger
         return $this->state->enabled();
     }
 
-    public function handle($queries)
+    public function handle(QueryCollection $collection)
     {
-        foreach ($queries as $query) {
-            if (!$query instanceof Query) {
-                continue;
-            }
-
-            $this->driver->single($query);
-        }
+        $this->driver->bulk($collection);
     }
 
 
